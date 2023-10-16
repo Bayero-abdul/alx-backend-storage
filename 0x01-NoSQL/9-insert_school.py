@@ -3,16 +3,15 @@
 
 
 def insert_school(mongo_collection, **kwargs):
-    """Inserts a new document in a collection 
+    """Inserts a new document in a collection
     based on kwargs.
-    
-    returns: new _id 
+
+    returns: new _id
     """
 
     try:
-        id = mongo_collection.insert(kwargs)
-    except:
+        result = mongo_collection.insert_one(kwargs)
+    except BaseException:
         print('new document was not inserted')
 
-    return id.inserted_id
-
+    return result.inserted_id

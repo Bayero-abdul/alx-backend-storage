@@ -27,7 +27,7 @@ def main():
     print('Methods:')
     for method in methods:
         if method in ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']:
-            print(f'    method {method}: {methods.get(method)}')
+            print(f'\tmethod {method}: {methods.get(method)}')
 
     print(f'{status_check} status check')
 

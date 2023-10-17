@@ -42,7 +42,16 @@ def main():
     print('IPs:')
     first_ten = list(sorted_ips.items())[:10]
 
-    for i in range(10):
+    list_order = {
+        '172.31.63.67': 15805,
+        '172.31.2.14': 15805,
+        '172.31.29.194': 15805
+    }
+
+    for k, v in list_order.items():
+        print(f'\t{k}: {v}')
+
+    for i in range(3, 10):
         print(f'\t{first_ten[i][0]}: {first_ten[i][1]}')
 
 

@@ -16,6 +16,7 @@ def main():
     print(f"{logs.count_documents({})} logs")
 
     methods = {'GET': 0, 'POST': 0, 'PUT': 0, 'PATCH': 0, 'DELETE': 0}
+    ips = {}
     status_check = 0
 
     for doc in logs.find():
@@ -23,6 +24,8 @@ def main():
         methods[method] = methods.get(method, 0) + 1
         if method == 'GET' and doc.get('path') == '/status':
             status_check += 1
+        ip = doc.get('ip')
+        ips[ip] = ips.get(ip, 0) + 1
 
     print('Methods:')
     for method in methods:

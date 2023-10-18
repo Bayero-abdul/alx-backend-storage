@@ -20,7 +20,7 @@ def main():
     print('Methods:')
     for method in methods:
         count = nginx_collection.count_documents({'method': method})
-        print(f'\t{method}: {count}')
+        print(f'\tmethod {method}: {count}')
 
     status_check = nginx_collection.count_documents(
         {'method': 'GET', 'path': '/status'})

@@ -11,48 +11,34 @@ def main():
 
     db = MongoClient('mongodb://127.0.0.1:27017')
 
-    logs = db.logs.nginx
+    nginx_collection = db.logs.nginx
 
-    print(f"{logs.count_documents({})} logs")
+    n_logs = nginx_collection.count_documents({})
+    print(f'{n_logs} logs')
 
-    methods = {'GET': 0, 'POST': 0, 'PUT': 0, 'PATCH': 0, 'DELETE': 0}
-    ips = {}
-    status_check = 0
-
-    for doc in logs.find():
-        method = doc.get('method')
-        methods[method] = methods.get(method, 0) + 1
-        if method == 'GET' and doc.get('path') == '/status':
-            status_check += 1
-        ip = doc.get('ip')
-        ips[ip] = ips.get(ip, 0) + 1
-
+    methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
     print('Methods:')
     for method in methods:
-        if method in ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']:
-            print(f'\tmethod {method}: {methods.get(method)}')
+        count = nginx_collection.count_documents({'method': method})
+        print(f'\t{method}: {count}')
 
+    status_check = nginx_collection.count_documents(
+        {'method': 'GET', 'path': '/status'})
     print(f'{status_check} status check')
 
-    sorted_ips = dict(
-        sorted(
-            ips.items(),
-            key=lambda item: item[1],
-            reverse=True))
+    pipeline = [
+        {'$group': {'_id': '$ip', 'count': {'$sum': 1}}},
+        {'$sort': {'count': -1}},
+        {'$limit': 10},
+        {'$project': {'_id': 0, 'ip': '$_id', 'count': 1}}
+    ]
+
+    tops = nginx_collection.aggregate(pipeline)
     print('IPs:')
-    first_ten = list(sorted_ips.items())[:10]
-
-    list_order = {
-        '172.31.63.67': 15805,
-        '172.31.2.14': 15805,
-        '172.31.29.194': 15805
-    }
-
-    for k, v in list_order.items():
-        print(f'\t{k}: {v}')
-
-    for i in range(3, 10):
-        print(f'\t{first_ten[i][0]}: {first_ten[i][1]}')
+    for top in tops:
+        ip = top.get('ip')
+        count = top.get('count')
+        print(f'\t{ip}: {count}')
 
 
 if __name__ == "__main__":

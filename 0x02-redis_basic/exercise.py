@@ -17,6 +17,21 @@ def count_calls(method: Callable) -> Callable:
     return wrapper
 
 
+def call_history(method: Callable) -> Callable:
+    """Stores the history of inputs and outputs for a particular function. """
+    @wraps(method)
+    def wrapper(self, *args, **kwds):
+        k_input = method.__qualname__ + ':inputs'
+        self._redis.rpush(k_input, str(args))
+
+        output = method(self, *args, **kwds)
+        k_output = method.__qualname__ + ':outputs'
+        self._redis.rpush(k_output, output)
+
+        return output
+    return wrapper
+
+
 class Cache:
     """Caches data.
 
@@ -29,17 +44,18 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @call_history
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
-        """takes a data argument and stores it in redis using
-        a random key."""
+        """Takes a data argument and stores it in redis using
+        a random key. """
         key = str(uuid.uuid1())
         self._redis.set(key, data)
         return key
 
     def get(self, key: str,
             fn: Callable = None) -> Union[str, bytes, int, float, None]:
-        """retrieves and converts the data back to the desired format. """
+        """Retrieves and converts the data back to the desired format. """
         if key is None:
             return None
 
@@ -47,14 +63,14 @@ class Cache:
         return fn(data) if fn else data if data else None
 
     def get_str(self, key: str) -> str:
-        """retrieves and converts the data to string. """
+        """Retrieves and converts the data to string. """
         try:
             return str(self._redis.get(key))
         except Exception:
             return None
 
     def get_int(self, key: str) -> int:
-        """retrieves and converts the data to int"""
+        """Retrieves and converts the data to int. """
         try:
             return int(self._redis.get(key))
         except Exception:

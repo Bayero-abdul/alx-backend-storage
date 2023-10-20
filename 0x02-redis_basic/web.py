@@ -18,12 +18,13 @@ def url_access_count(func: Callable) -> Callable:
     def wrapper(url):
         client.incr(f"count:{url}")
 
-        content = client.get(f"cached:{url}")
+        content = client.get(f"result:{url}")
         if content:
             return content.decode('utf-8')
 
         content = func(url)
-        client.setex(f"cached:{url}", 10, content)
+        client.set(f'count:{url}', 0)
+        client.setex(f"result:{url}", 10, content)
 
         return content
     return wrapper

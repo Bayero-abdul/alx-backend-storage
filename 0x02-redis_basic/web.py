@@ -14,13 +14,16 @@ def url_access_count(method: Callable) -> Callable:
     @wraps(method)
     def wrapper(url):
         client = redis.Redis()
-        key = f"count:{url}"
+        client.incr(f"count:{url}")
 
-        client.incr(key)
-        count = client.get(key)
-        client.setex(key, 10, count.decode())
+        content = client.get(f"cache:{url}")
+        if content:
+            return content
 
-        return method(url)
+        content = method(url)
+        client.setex(f"cache:{url}", 10, content)
+
+        return content
     return wrapper
 
 

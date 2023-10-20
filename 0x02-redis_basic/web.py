@@ -8,20 +8,22 @@ from typing import Callable
 from functools import wraps
 
 
-def url_access_count(method: Callable) -> Callable:
+client = redis.Redis()
+
+
+def url_access_count(func: Callable) -> Callable:
     """Tracks how many times a particular URL was accessed and
     cache the result with an expiration time. """
-    @wraps(method)
+    @wraps(func)
     def wrapper(url):
-        client = redis.Redis()
         client.incr(f"count:{url}")
 
-        content = client.get(f"cache:{url}")
+        content = client.get(f"cached:{url}")
         if content:
-            return content
+            return content.decode('utf-8')
 
-        content = method(url)
-        client.setex(f"cache:{url}", 10, content)
+        content = func(url)
+        client.setex(f"cached:{url}", 10, content)
 
         return content
     return wrapper

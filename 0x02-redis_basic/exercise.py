@@ -8,6 +8,19 @@ from functools import wraps
 from typing import Union, Callable
 
 
+def replay(method: Callable) -> None:
+    """Display the history of calls of a particular function. """
+    client = redis.Redis()
+    inputs = client.lrange("{}:inputs".format(method.__qualname__), 0, -1)
+    outputs = client.lrange("{}:outputs".format(method.__qualname__), 0, -1)
+
+    no_of_calls = len(inputs)
+    print(f'{method.__qualname__} was called {no_of_calls} times:')
+    for call in zip(inputs, outputs):
+        input, output = call[0].decode(), call[1].decode()
+        print(f'{method.__qualname__}(*{input}) -> {output}')
+
+
 def count_calls(method: Callable) -> Callable:
     """Counts how many times methods of the Cache class are called. """
     @wraps(method)

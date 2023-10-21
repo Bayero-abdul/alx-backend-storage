@@ -1,8 +1,5 @@
 # 0x02. Redis basic
 
-# Project Name
-0x02. Redis Basic
-
 ## Project Overview
 This project is part of the ALX curriculum, focusing on Redis and its basic operations. You will learn how to use Redis for caching and storage while implementing various functionalities, including writing and reading data from Redis, counting method calls, storing lists, retrieving method histories, and implementing an expiring web cache and tracker.
 
